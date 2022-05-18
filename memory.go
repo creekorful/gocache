@@ -11,6 +11,15 @@ type entry struct {
 	expirationTime time.Time
 }
 
+// NewMemoryCache return a Cache in-memory.
+func NewMemoryCache(prefix string) Cache {
+	return &memoryCache{
+		values: map[string]entry{},
+		mutex:  sync.RWMutex{},
+		prefix: prefix,
+	}
+}
+
 type memoryCache struct {
 	values map[string]entry
 	mutex  sync.RWMutex
@@ -18,7 +27,7 @@ type memoryCache struct {
 }
 
 func (mc *memoryCache) Int64(key string) (int64, bool, error) {
-	val, exists, err := mc.getValue(key)
+	val, exists, err := mc.Value(key)
 	if err != nil {
 		return 0, false, err
 	}
@@ -30,7 +39,7 @@ func (mc *memoryCache) Int64(key string) (int64, bool, error) {
 }
 
 func (mc *memoryCache) SetInt64(key string, value int64, ttl time.Duration) error {
-	return mc.setValue(key, value, ttl)
+	return mc.SetValue(key, value, ttl)
 }
 
 func (mc *memoryCache) GetInt64(key string, callback func() (int64, time.Duration)) (int64, error) {
@@ -40,7 +49,7 @@ func (mc *memoryCache) GetInt64(key string, callback func() (int64, time.Duratio
 	}
 	if !exists {
 		val, ttl := callback()
-		if err := mc.setValue(key, val, ttl); err != nil {
+		if err := mc.SetValue(key, val, ttl); err != nil {
 			return 0, err
 		}
 
@@ -51,7 +60,7 @@ func (mc *memoryCache) GetInt64(key string, callback func() (int64, time.Duratio
 }
 
 func (mc *memoryCache) Int(key string) (int, bool, error) {
-	val, exists, err := mc.getValue(key)
+	val, exists, err := mc.Value(key)
 	if err != nil {
 		return 0, false, err
 	}
@@ -63,7 +72,7 @@ func (mc *memoryCache) Int(key string) (int, bool, error) {
 }
 
 func (mc *memoryCache) SetInt(key string, value int, ttl time.Duration) error {
-	return mc.setValue(key, value, ttl)
+	return mc.SetValue(key, value, ttl)
 }
 
 func (mc *memoryCache) GetInt(key string, callback func() (int, time.Duration)) (int, error) {
@@ -73,7 +82,7 @@ func (mc *memoryCache) GetInt(key string, callback func() (int, time.Duration)) 
 	}
 	if !exists {
 		val, ttl := callback()
-		if err := mc.setValue(key, val, ttl); err != nil {
+		if err := mc.SetValue(key, val, ttl); err != nil {
 			return 0, err
 		}
 
@@ -84,7 +93,7 @@ func (mc *memoryCache) GetInt(key string, callback func() (int, time.Duration)) 
 }
 
 func (mc *memoryCache) Time(key string) (time.Time, bool, error) {
-	val, exists, err := mc.getValue(key)
+	val, exists, err := mc.Value(key)
 	if err != nil {
 		return time.Time{}, false, err
 	}
@@ -96,7 +105,7 @@ func (mc *memoryCache) Time(key string) (time.Time, bool, error) {
 }
 
 func (mc *memoryCache) SetTime(key string, value time.Time, ttl time.Duration) error {
-	return mc.setValue(key, value, ttl)
+	return mc.SetValue(key, value, ttl)
 }
 
 func (mc *memoryCache) GetTime(key string, callback func() (time.Time, time.Duration)) (time.Time, error) {
@@ -106,7 +115,7 @@ func (mc *memoryCache) GetTime(key string, callback func() (time.Time, time.Dura
 	}
 	if !exists {
 		val, ttl := callback()
-		if err := mc.setValue(key, val, ttl); err != nil {
+		if err := mc.SetValue(key, val, ttl); err != nil {
 			return time.Time{}, err
 		}
 
@@ -116,18 +125,7 @@ func (mc *memoryCache) GetTime(key string, callback func() (time.Time, time.Dura
 	return val, nil
 }
 
-func (mc *memoryCache) Delete(key string) error {
-	key = fmt.Sprintf("%s:%s", mc.prefix, key)
-
-	mc.mutex.RLock()
-	defer mc.mutex.RUnlock()
-
-	delete(mc.values, key)
-
-	return nil
-}
-
-func (mc *memoryCache) getValue(key string) (interface{}, bool, error) {
+func (mc *memoryCache) Value(key string) (interface{}, bool, error) {
 	key = fmt.Sprintf("%s:%s", mc.prefix, key)
 
 	mc.mutex.RLock()
@@ -147,7 +145,7 @@ func (mc *memoryCache) getValue(key string) (interface{}, bool, error) {
 	return val.value, true, nil
 }
 
-func (mc *memoryCache) setValue(key string, value interface{}, ttl time.Duration) error {
+func (mc *memoryCache) SetValue(key string, value interface{}, ttl time.Duration) error {
 	key = fmt.Sprintf("%s:%s", mc.prefix, key)
 
 	mc.mutex.Lock()
@@ -162,6 +160,34 @@ func (mc *memoryCache) setValue(key string, value interface{}, ttl time.Duration
 		value:          value,
 		expirationTime: expirationTime,
 	}
+
+	return nil
+}
+
+func (mc *memoryCache) GetValue(key string, callback func() (interface{}, time.Duration)) (interface{}, error) {
+	val, exists, err := mc.Value(key)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		val, ttl := callback()
+		if err := mc.SetValue(key, val, ttl); err != nil {
+			return nil, err
+		}
+
+		return val, nil
+	}
+
+	return val, nil
+}
+
+func (mc *memoryCache) Delete(key string) error {
+	key = fmt.Sprintf("%s:%s", mc.prefix, key)
+
+	mc.mutex.RLock()
+	defer mc.mutex.RUnlock()
+
+	delete(mc.values, key)
 
 	return nil
 }

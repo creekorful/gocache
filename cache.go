@@ -1,8 +1,6 @@
 package gocache
 
 import (
-	"github.com/go-redis/redis/v8"
-	"sync"
 	"time"
 )
 
@@ -42,28 +40,17 @@ type Cache interface {
 	// otherwise it will run the callback, cache and return the value
 	GetTime(key string, callback func() (time.Time, time.Duration)) (time.Time, error)
 
+	// Value retrieve the raw value identified by given key
+	// it returns the value, a boolean indicating if the value exists or not, and an error (if any)
+	Value(key string) (interface{}, bool, error)
+	// SetValue set the raw value identified by given key
+	// it takes the key, the value to be set, and an optional TTL (see: NoExpiration)
+	SetValue(key string, value interface{}, ttl time.Duration) error
+	// GetValue either retrieve the raw value identified by given key if it exists
+	// otherwise it will run the callback, cache and return the value
+	GetValue(key string, callback func() (interface{}, time.Duration)) (interface{}, error)
+
 	// Delete the value identified by given key.
 	// the function does not fail if key does not exist
 	Delete(key string) error
-}
-
-// NewRedisCache return a Cache backed by a Redis instance
-func NewRedisCache(uri, password, prefix string) (Cache, error) {
-	return &redisCache{
-		redis: redis.NewClient(&redis.Options{
-			Addr:     uri,
-			Password: password,
-			DB:       0,
-		}),
-		prefix: prefix,
-	}, nil
-}
-
-// NewMemoryCache return a Cache in-memory. (Slow)
-func NewMemoryCache(prefix string) Cache {
-	return &memoryCache{
-		values: map[string]entry{},
-		mutex:  sync.RWMutex{},
-		prefix: prefix,
-	}
 }
