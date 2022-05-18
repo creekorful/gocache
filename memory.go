@@ -42,13 +42,17 @@ func (mc *memoryCache) SetInt64(key string, value int64, ttl time.Duration) erro
 	return mc.SetValue(key, value, ttl)
 }
 
-func (mc *memoryCache) GetInt64(key string, callback func() (int64, time.Duration)) (int64, error) {
+func (mc *memoryCache) GetInt64(key string, callback func() (int64, time.Duration, error)) (int64, error) {
 	val, exists, err := mc.Int64(key)
 	if err != nil {
 		return 0, err
 	}
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return 0, err
+		}
+
 		if err := mc.SetValue(key, val, ttl); err != nil {
 			return 0, err
 		}
@@ -75,13 +79,17 @@ func (mc *memoryCache) SetInt(key string, value int, ttl time.Duration) error {
 	return mc.SetValue(key, value, ttl)
 }
 
-func (mc *memoryCache) GetInt(key string, callback func() (int, time.Duration)) (int, error) {
+func (mc *memoryCache) GetInt(key string, callback func() (int, time.Duration, error)) (int, error) {
 	val, exists, err := mc.Int(key)
 	if err != nil {
 		return 0, err
 	}
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return 0, err
+		}
+
 		if err := mc.SetValue(key, val, ttl); err != nil {
 			return 0, err
 		}
@@ -108,13 +116,17 @@ func (mc *memoryCache) SetTime(key string, value time.Time, ttl time.Duration) e
 	return mc.SetValue(key, value, ttl)
 }
 
-func (mc *memoryCache) GetTime(key string, callback func() (time.Time, time.Duration)) (time.Time, error) {
+func (mc *memoryCache) GetTime(key string, callback func() (time.Time, time.Duration, error)) (time.Time, error) {
 	val, exists, err := mc.Time(key)
 	if err != nil {
 		return time.Time{}, err
 	}
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return time.Time{}, err
+		}
+
 		if err := mc.SetValue(key, val, ttl); err != nil {
 			return time.Time{}, err
 		}
@@ -141,13 +153,17 @@ func (mc *memoryCache) SetBytes(key string, value []byte, ttl time.Duration) err
 	return mc.SetValue(key, value, ttl)
 }
 
-func (mc *memoryCache) GetBytes(key string, callback func() ([]byte, time.Duration)) ([]byte, error) {
+func (mc *memoryCache) GetBytes(key string, callback func() ([]byte, time.Duration, error)) ([]byte, error) {
 	val, exists, err := mc.Bytes(key)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return nil, err
+		}
+
 		if err := mc.SetValue(key, val, ttl); err != nil {
 			return nil, err
 		}
@@ -197,13 +213,17 @@ func (mc *memoryCache) SetValue(key string, value interface{}, ttl time.Duration
 	return nil
 }
 
-func (mc *memoryCache) GetValue(key string, callback func() (interface{}, time.Duration)) (interface{}, error) {
+func (mc *memoryCache) GetValue(key string, callback func() (interface{}, time.Duration, error)) (interface{}, error) {
 	val, exists, err := mc.Value(key)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return nil, err
+		}
+
 		if err := mc.SetValue(key, val, ttl); err != nil {
 			return nil, err
 		}

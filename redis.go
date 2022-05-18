@@ -45,14 +45,18 @@ func (rc *redisCache) SetInt64(key string, value int64, ttl time.Duration) error
 	return rc.redis.Set(context.Background(), key, value, ttl).Err()
 }
 
-func (rc *redisCache) GetInt64(key string, callback func() (int64, time.Duration)) (int64, error) {
+func (rc *redisCache) GetInt64(key string, callback func() (int64, time.Duration, error)) (int64, error) {
 	val, exists, err := rc.Int64(key)
 	if err != nil {
 		return 0, err
 	}
 
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return 0, err
+		}
+
 		if err := rc.SetInt64(key, val, ttl); err != nil {
 			return 0, err
 		}
@@ -83,14 +87,18 @@ func (rc *redisCache) SetInt(key string, value int, ttl time.Duration) error {
 	return rc.redis.Set(context.Background(), key, value, ttl).Err()
 }
 
-func (rc *redisCache) GetInt(key string, callback func() (int, time.Duration)) (int, error) {
+func (rc *redisCache) GetInt(key string, callback func() (int, time.Duration, error)) (int, error) {
 	val, exists, err := rc.Int(key)
 	if err != nil {
 		return 0, err
 	}
 
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return 0, err
+		}
+
 		if err := rc.SetInt(key, val, ttl); err != nil {
 			return 0, err
 		}
@@ -121,14 +129,18 @@ func (rc *redisCache) SetTime(key string, value time.Time, ttl time.Duration) er
 	return rc.redis.Set(context.Background(), key, value, ttl).Err()
 }
 
-func (rc *redisCache) GetTime(key string, callback func() (time.Time, time.Duration)) (time.Time, error) {
+func (rc *redisCache) GetTime(key string, callback func() (time.Time, time.Duration, error)) (time.Time, error) {
 	val, exists, err := rc.Time(key)
 	if err != nil {
 		return time.Time{}, err
 	}
 
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return time.Time{}, err
+		}
+
 		if err := rc.SetTime(key, val, ttl); err != nil {
 			return time.Time{}, err
 		}
@@ -159,14 +171,18 @@ func (rc *redisCache) SetBytes(key string, value []byte, ttl time.Duration) erro
 	return rc.redis.Set(context.Background(), key, value, ttl).Err()
 }
 
-func (rc *redisCache) GetBytes(key string, callback func() ([]byte, time.Duration)) ([]byte, error) {
+func (rc *redisCache) GetBytes(key string, callback func() ([]byte, time.Duration, error)) ([]byte, error) {
 	val, exists, err := rc.Bytes(key)
 	if err != nil {
 		return nil, err
 	}
 
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return nil, err
+		}
+
 		if err := rc.SetBytes(key, val, ttl); err != nil {
 			return nil, err
 		}
@@ -210,14 +226,18 @@ func (rc *redisCache) SetValue(key string, value interface{}, ttl time.Duration)
 	return rc.redis.Set(context.Background(), key, b, ttl).Err()
 }
 
-func (rc *redisCache) GetValue(key string, callback func() (interface{}, time.Duration)) (interface{}, error) {
+func (rc *redisCache) GetValue(key string, callback func() (interface{}, time.Duration, error)) (interface{}, error) {
 	val, exists, err := rc.Value(key)
 	if err != nil {
 		return time.Time{}, err
 	}
 
 	if !exists {
-		val, ttl := callback()
+		val, ttl, err := callback()
+		if err != nil {
+			return nil, err
+		}
+
 		if err := rc.SetValue(key, val, ttl); err != nil {
 			return time.Time{}, err
 		}
