@@ -139,6 +139,44 @@ func (rc *redisCache) GetTime(key string, callback func() (time.Time, time.Durat
 	return val, nil
 }
 
+func (rc *redisCache) Bytes(key string) ([]byte, bool, error) {
+	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+
+	if val, err := rc.redis.Get(context.Background(), key).Bytes(); err != nil {
+		if err == redis.Nil {
+			return nil, false, nil
+		}
+
+		return nil, false, err
+	} else {
+		return val, true, nil
+	}
+}
+
+func (rc *redisCache) SetBytes(key string, value []byte, ttl time.Duration) error {
+	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+
+	return rc.redis.Set(context.Background(), key, value, ttl).Err()
+}
+
+func (rc *redisCache) GetBytes(key string, callback func() ([]byte, time.Duration)) ([]byte, error) {
+	val, exists, err := rc.Bytes(key)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		val, ttl := callback()
+		if err := rc.SetBytes(key, val, ttl); err != nil {
+			return nil, err
+		}
+
+		return val, nil
+	}
+
+	return val, nil
+}
+
 func (rc *redisCache) Value(key string) (interface{}, bool, error) {
 	key = fmt.Sprintf("%s:%s", rc.prefix, key)
 

@@ -125,6 +125,39 @@ func (mc *memoryCache) GetTime(key string, callback func() (time.Time, time.Dura
 	return val, nil
 }
 
+func (mc *memoryCache) Bytes(key string) ([]byte, bool, error) {
+	val, exists, err := mc.Value(key)
+	if err != nil {
+		return nil, false, err
+	}
+	if !exists {
+		return nil, false, nil
+	}
+
+	return val.([]byte), true, nil
+}
+
+func (mc *memoryCache) SetBytes(key string, value []byte, ttl time.Duration) error {
+	return mc.SetValue(key, value, ttl)
+}
+
+func (mc *memoryCache) GetBytes(key string, callback func() ([]byte, time.Duration)) ([]byte, error) {
+	val, exists, err := mc.Bytes(key)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		val, ttl := callback()
+		if err := mc.SetValue(key, val, ttl); err != nil {
+			return nil, err
+		}
+
+		return val, nil
+	}
+
+	return val, nil
+}
+
 func (mc *memoryCache) Value(key string) (interface{}, bool, error) {
 	key = fmt.Sprintf("%s:%s", mc.prefix, key)
 

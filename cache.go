@@ -40,6 +40,16 @@ type Cache interface {
 	// otherwise it will run the callback, cache and return the value
 	GetTime(key string, callback func() (time.Time, time.Duration)) (time.Time, error)
 
+	// Bytes retrieve the []byte value identified by given key
+	// it returns the value, a boolean indicating if the value exists or not, and an error (if any)
+	Bytes(key string) ([]byte, bool, error)
+	// SetBytes set the []byte value identified by given key
+	// it takes the key, the value to be set, and an optional TTL (see: NoExpiration)
+	SetBytes(key string, value []byte, ttl time.Duration) error
+	// GetBytes either retrieve the value identified by given key if it exists
+	// otherwise it will run the callback, cache and return the value
+	GetBytes(key string, callback func() ([]byte, time.Duration)) ([]byte, error)
+
 	// Value retrieve the raw value identified by given key
 	// it returns the value, a boolean indicating if the value exists or not, and an error (if any)
 	Value(key string) (interface{}, bool, error)
