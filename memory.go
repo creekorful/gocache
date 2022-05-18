@@ -153,9 +153,14 @@ func (mc *memoryCache) setValue(key string, value interface{}, ttl time.Duration
 	mc.mutex.Lock()
 	defer mc.mutex.Unlock()
 
+	expirationTime := time.Time{}
+	if ttl != NoExpiration {
+		expirationTime = time.Now().Add(ttl)
+	}
+
 	mc.values[key] = entry{
 		value:          value,
-		expirationTime: time.Now().Add(ttl),
+		expirationTime: expirationTime,
 	}
 
 	return nil
