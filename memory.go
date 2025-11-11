@@ -182,13 +182,13 @@ func (mc *memoryCache) Value(key string) (interface{}, bool, error) {
 
 	val, exists := mc.values[key]
 	if !exists {
-		return 0, false, nil
+		return nil, false, nil
 	}
 
 	// handle expiration
 	if !val.expirationTime.IsZero() && val.expirationTime.Before(time.Now()) {
 		delete(mc.values, key)
-		return 0, false, nil
+		return nil, false, nil
 	}
 
 	return val.value, true, nil

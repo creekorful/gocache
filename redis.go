@@ -3,9 +3,11 @@ package gocache
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 // NewRedisCache return a Cache backed by a Redis instance
@@ -29,7 +31,7 @@ func (rc *redisCache) Int64(key string) (int64, bool, error) {
 	key = fmt.Sprintf("%s:%s", rc.prefix, key)
 
 	if val, err := rc.redis.Get(context.Background(), key).Int64(); err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return 0, false, nil
 		}
 
@@ -71,7 +73,7 @@ func (rc *redisCache) Int(key string) (int, bool, error) {
 	key = fmt.Sprintf("%s:%s", rc.prefix, key)
 
 	if val, err := rc.redis.Get(context.Background(), key).Int(); err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return 0, false, nil
 		}
 
@@ -113,7 +115,7 @@ func (rc *redisCache) Time(key string) (time.Time, bool, error) {
 	key = fmt.Sprintf("%s:%s", rc.prefix, key)
 
 	if val, err := rc.redis.Get(context.Background(), key).Time(); err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return time.Time{}, false, nil
 		}
 
@@ -155,7 +157,7 @@ func (rc *redisCache) Bytes(key string) ([]byte, bool, error) {
 	key = fmt.Sprintf("%s:%s", rc.prefix, key)
 
 	if val, err := rc.redis.Get(context.Background(), key).Bytes(); err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return nil, false, nil
 		}
 
@@ -198,7 +200,7 @@ func (rc *redisCache) Value(key string) (interface{}, bool, error) {
 
 	b, err := rc.redis.Get(context.Background(), key).Bytes()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return nil, false, nil
 		}
 
@@ -229,7 +231,7 @@ func (rc *redisCache) SetValue(key string, value interface{}, ttl time.Duration)
 func (rc *redisCache) GetValue(key string, callback func() (interface{}, time.Duration, error)) (interface{}, error) {
 	val, exists, err := rc.Value(key)
 	if err != nil {
-		return time.Time{}, err
+		return nil, err
 	}
 
 	if !exists {
@@ -239,7 +241,7 @@ func (rc *redisCache) GetValue(key string, callback func() (interface{}, time.Du
 		}
 
 		if err := rc.SetValue(key, val, ttl); err != nil {
-			return time.Time{}, err
+			return nil, err
 		}
 
 		return val, nil
@@ -252,7 +254,7 @@ func (rc *redisCache) Delete(key string) error {
 	key = fmt.Sprintf("%s:%s", rc.prefix, key)
 
 	err := rc.redis.Del(context.Background(), key).Err()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return nil
 	}
 
