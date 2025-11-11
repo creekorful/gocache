@@ -250,6 +250,49 @@ func (rc *redisCache) GetValue(key string, callback func() (interface{}, time.Du
 	return val, nil
 }
 
+func (rc *redisCache) String(key string) (string, bool, error) {
+	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+
+	s, err := rc.redis.Get(context.Background(), key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return "", false, nil
+		}
+
+		return "", false, err
+	}
+
+	return s, true, nil
+}
+
+func (rc *redisCache) SetString(key string, value string, ttl time.Duration) error {
+	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+
+	return rc.redis.Set(context.Background(), key, value, ttl).Err()
+}
+
+func (rc *redisCache) GetString(key string, callback func() (string, time.Duration, error)) (string, error) {
+	val, exists, err := rc.String(key)
+	if err != nil {
+		return "", err
+	}
+
+	if !exists {
+		val, ttl, err := callback()
+		if err != nil {
+			return "", err
+		}
+
+		if err := rc.SetString(key, val, ttl); err != nil {
+			return "", err
+		}
+
+		return val, nil
+	}
+
+	return val, nil
+}
+
 func (rc *redisCache) Delete(key string) error {
 	key = fmt.Sprintf("%s:%s", rc.prefix, key)
 

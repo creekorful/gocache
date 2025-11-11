@@ -60,6 +60,16 @@ type Cache interface {
 	// otherwise it will run the callback, cache and return the value
 	GetValue(key string, callback func() (interface{}, time.Duration, error)) (interface{}, error)
 
+	// String retrieve the string value identified by given key
+	// it returns the value, a boolean indicating if the value exists or not, and an error (if any)
+	String(key string) (string, bool, error)
+	// SetString set the string value identified by given key
+	// it takes the key, the value to be set, and an optional TTL (see: NoExpiration)
+	SetString(key string, value string, ttl time.Duration) error
+	// GetString either retrieve the string value identified by given key if it exists
+	// otherwise it will run the callback, cache and return the value
+	GetString(key string, callback func() (string, time.Duration, error)) (string, error)
+
 	// Delete the value identified by given key.
 	// the function does not fail if key does not exist
 	Delete(key string) error

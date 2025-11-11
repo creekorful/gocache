@@ -234,6 +234,66 @@ func (mc *memoryCache) GetValue(key string, callback func() (interface{}, time.D
 	return val, nil
 }
 
+func (mc *memoryCache) String(key string) (string, bool, error) {
+	key = fmt.Sprintf("%s:%s", mc.prefix, key)
+
+	mc.mutex.RLock()
+	defer mc.mutex.RUnlock()
+
+	val, exists := mc.values[key]
+	if !exists {
+		return "", false, nil
+	}
+
+	// handle expiration
+	if !val.expirationTime.IsZero() && val.expirationTime.Before(time.Now()) {
+		delete(mc.values, key)
+		return "", false, nil
+	}
+
+	return val.value.(string), true, nil
+}
+
+func (mc *memoryCache) SetString(key string, value string, ttl time.Duration) error {
+	key = fmt.Sprintf("%s:%s", mc.prefix, key)
+
+	mc.mutex.Lock()
+	defer mc.mutex.Unlock()
+
+	expirationTime := time.Time{}
+	if ttl != NoExpiration {
+		expirationTime = time.Now().Add(ttl)
+	}
+
+	mc.values[key] = entry{
+		value:          value,
+		expirationTime: expirationTime,
+	}
+
+	return nil
+}
+
+func (mc *memoryCache) GetString(key string, callback func() (string, time.Duration, error)) (string, error) {
+	val, exists, err := mc.String(key)
+	if err != nil {
+		return "", err
+	}
+	if !exists {
+		val, ttl, err := callback()
+		if err != nil {
+			return "", err
+		}
+
+		if err := mc.SetString(key, val, ttl); err != nil {
+			return "", err
+		}
+
+		return val, nil
+	}
+
+	return val, nil
+}
+
 func (mc *memoryCache) Delete(key string) error {
 	key = fmt.Sprintf("%s:%s", mc.prefix, key)
 
