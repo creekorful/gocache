@@ -28,7 +28,9 @@ type redisCache struct {
 }
 
 func (rc *redisCache) Int64(key string) (int64, bool, error) {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	if val, err := rc.redis.Get(context.Background(), key).Int64(); err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -42,7 +44,9 @@ func (rc *redisCache) Int64(key string) (int64, bool, error) {
 }
 
 func (rc *redisCache) SetInt64(key string, value int64, ttl time.Duration) error {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	return rc.redis.Set(context.Background(), key, value, ttl).Err()
 }
@@ -70,7 +74,9 @@ func (rc *redisCache) GetInt64(key string, callback func() (int64, time.Duration
 }
 
 func (rc *redisCache) Int(key string) (int, bool, error) {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	if val, err := rc.redis.Get(context.Background(), key).Int(); err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -84,7 +90,9 @@ func (rc *redisCache) Int(key string) (int, bool, error) {
 }
 
 func (rc *redisCache) SetInt(key string, value int, ttl time.Duration) error {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	return rc.redis.Set(context.Background(), key, value, ttl).Err()
 }
@@ -112,7 +120,9 @@ func (rc *redisCache) GetInt(key string, callback func() (int, time.Duration, er
 }
 
 func (rc *redisCache) Time(key string) (time.Time, bool, error) {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	if val, err := rc.redis.Get(context.Background(), key).Time(); err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -126,7 +136,9 @@ func (rc *redisCache) Time(key string) (time.Time, bool, error) {
 }
 
 func (rc *redisCache) SetTime(key string, value time.Time, ttl time.Duration) error {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	return rc.redis.Set(context.Background(), key, value, ttl).Err()
 }
@@ -154,7 +166,9 @@ func (rc *redisCache) GetTime(key string, callback func() (time.Time, time.Durat
 }
 
 func (rc *redisCache) Bytes(key string) ([]byte, bool, error) {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	if val, err := rc.redis.Get(context.Background(), key).Bytes(); err != nil {
 		if errors.Is(err, redis.Nil) {
@@ -168,7 +182,9 @@ func (rc *redisCache) Bytes(key string) ([]byte, bool, error) {
 }
 
 func (rc *redisCache) SetBytes(key string, value []byte, ttl time.Duration) error {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	return rc.redis.Set(context.Background(), key, value, ttl).Err()
 }
@@ -196,7 +212,9 @@ func (rc *redisCache) GetBytes(key string, callback func() ([]byte, time.Duratio
 }
 
 func (rc *redisCache) Value(key string) (interface{}, bool, error) {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	b, err := rc.redis.Get(context.Background(), key).Bytes()
 	if err != nil {
@@ -218,7 +236,9 @@ func (rc *redisCache) Value(key string) (interface{}, bool, error) {
 }
 
 func (rc *redisCache) SetValue(key string, value interface{}, ttl time.Duration) error {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	b, err := json.Marshal(value)
 	if err != nil {
@@ -251,7 +271,9 @@ func (rc *redisCache) GetValue(key string, callback func() (interface{}, time.Du
 }
 
 func (rc *redisCache) String(key string) (string, bool, error) {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	s, err := rc.redis.Get(context.Background(), key).Result()
 	if err != nil {
@@ -266,7 +288,9 @@ func (rc *redisCache) String(key string) (string, bool, error) {
 }
 
 func (rc *redisCache) SetString(key string, value string, ttl time.Duration) error {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	return rc.redis.Set(context.Background(), key, value, ttl).Err()
 }
@@ -294,7 +318,9 @@ func (rc *redisCache) GetString(key string, callback func() (string, time.Durati
 }
 
 func (rc *redisCache) Delete(key string) error {
-	key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	if rc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", rc.prefix, key)
+	}
 
 	err := rc.redis.Del(context.Background(), key).Err()
 	if errors.Is(err, redis.Nil) {

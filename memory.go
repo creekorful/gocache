@@ -175,7 +175,9 @@ func (mc *memoryCache) GetBytes(key string, callback func() ([]byte, time.Durati
 }
 
 func (mc *memoryCache) Value(key string) (interface{}, bool, error) {
-	key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	if mc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	}
 
 	mc.mutex.RLock()
 	defer mc.mutex.RUnlock()
@@ -195,7 +197,9 @@ func (mc *memoryCache) Value(key string) (interface{}, bool, error) {
 }
 
 func (mc *memoryCache) SetValue(key string, value interface{}, ttl time.Duration) error {
-	key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	if mc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	}
 
 	mc.mutex.Lock()
 	defer mc.mutex.Unlock()
@@ -235,7 +239,9 @@ func (mc *memoryCache) GetValue(key string, callback func() (interface{}, time.D
 }
 
 func (mc *memoryCache) String(key string) (string, bool, error) {
-	key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	if mc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	}
 
 	mc.mutex.RLock()
 	defer mc.mutex.RUnlock()
@@ -255,7 +261,9 @@ func (mc *memoryCache) String(key string) (string, bool, error) {
 }
 
 func (mc *memoryCache) SetString(key string, value string, ttl time.Duration) error {
-	key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	if mc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	}
 
 	mc.mutex.Lock()
 	defer mc.mutex.Unlock()
@@ -295,7 +303,9 @@ func (mc *memoryCache) GetString(key string, callback func() (string, time.Durat
 }
 
 func (mc *memoryCache) Delete(key string) error {
-	key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	if mc.prefix != "" {
+		key = fmt.Sprintf("%s:%s", mc.prefix, key)
+	}
 
 	mc.mutex.RLock()
 	defer mc.mutex.RUnlock()
